@@ -12,7 +12,13 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 200px;
+    margin-top: 150px;
+}
+
+.panel {
+    height: 50px;
+    font-size: 30px;
+    font-weight: 700;
 }
 
 .board {
@@ -34,10 +40,41 @@ body {
     border: 2px solid gray;
     cursor: pointer;
     transition: all 0.05s linear;
+    position: relative;
 }
 
 .board__item:hover {
     background-color: #bbb;
+}
+
+.board__item--filled-X::before, .board__item--filled-X::after {
+    position: absolute;
+    content: '';
+    height: 5px;
+    width: 100%;
+    top: 50%;
+    left: 0;
+    background-color: red;
+}
+
+.board__item--filled-X::before {
+    transform: translateY(-50%) rotate(-45deg);
+}
+
+.board__item--filled-X::after {
+    transform: translateY(-50%) rotate(45deg);
+}
+
+.board__item--filled-O::before {
+    position: absolute;
+    content: '';
+    border-radius: 50%;
+    border: 5px solid blue;
+    height: 80%;
+    width: 80%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .reset-button {
