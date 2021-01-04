@@ -1,86 +1,110 @@
-const fieldsElements = document.querySelectorAll('.board__item');
-const panel = document.querySelector('.panel')
-const resetButtom = document.querySelector('.reset-buttom');
-let fields;
-let gameActive;
-let activePlayer;
+class Game {
+    fields;
+    gameActive;
+    activePlayer;
+    board;
 
-const displayWinMessage = () => {
-    panel.innerText = `${activePlayer} won!`;
-}
+    winningConditions = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+    ];
 
-const resetMessage = () => {
-    panel.innerText = '';
-}
+    constructor() {
+        this.board = new Board(this.handleItemClick, this.handleResetButtonClick);
+        this.setDefaults();
+    };
 
-const displayTieMessage = () => {
-    panel.innerText  = 'Tie!';
-}
+    isBordFull = () => {
+        return this.fields.find(field => field === '') === undefined;
+    };
 
-const setDefaults = () => {
-    fields = ['', '', '', '', '', '', '', '', ''];
-    gameActive = true;
-    activePlayer = 'X';
-}
-
-const winningConditions = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
-]
-
-const isBordFull = () => {
-    return fields.find(field => field === '') === undefined;
-}
-
-const validateGame = () => {
-    let gameWon = false;
-    for(let i = 0; i <= 7; i++) {
-        const [posA, posB, posC] = winningConditions[i];
-        const value1 = fields[posA];
-        const value2 = fields[posB];
-        const value3 = fields[posC];
-
-        if (value1 !== '' && value1 === value2 && value1 === value3) {
-            gameWon = true;
-            break;
+    validateGame = () => {
+        let gameWon = false;
+        for(let i = 0; i < this.winningConditions.length; i++) {
+            const [posA, posB, posC] = this.winningConditions[i];
+            const value1 = this.fields[posA];
+            const value2 = this.fields[posB];
+            const value3 = this.fields[posC];
+    
+            if (value1 !== '' && value1 === value2 && value1 === value3) {
+                gameWon = true;
+                break;
+            }
         }
-    }
+    
+        if(gameWon) {
+            this.gameActive = false;
+            this.board.displayWinMessage(this.activePlayer);
+        } else if (this.isBordFull()) {
+            this.gameActive = false;
+            this.board.displayTieMessage();
+        }
+    };
+    
+    handleItemClick = (e) => {
+        const { pos } = e.target.dataset;
+        if (this.gameActive && this.fields[pos] === '') {
+            this.fields[pos] = this.activePlayer;
+            e.target.classList.add(`board__item--filled-${this.activePlayer}`);
+            this.validateGame();
+            this.activePlayer = this.activePlayer === 'X' ? 'O' : 'X';
+        }      
+    };
 
-    if(gameWon) {
-        gameActive = false;
-        displayWinMessage();
-    } else if (isBordFull()) {
-        gameActive = false;
-        displayTieMessage();
-    }
+    handleResetButtonClick = () => {
+        this.setDefaults();
+    };
+
+    setDefaults = () => {
+        this.fields = ['', '', '', '', '', '', '', '', ''];
+        this.gameActive = true;
+        this.activePlayer = 'X';
+    };
 }
 
-const handleCellClick = (e) => {
-    const { pos } = e.target.dataset;
-    if (gameActive && fields[pos] === '') {
-        fields[pos] = activePlayer;
-        e.target.classList.add(`board__item--filled-${activePlayer}`);
-        validateGame();
-        activePlayer = activePlayer === 'X' ? 'O' : 'X';
-    }      
+class Board {
+    fieldsElements = document.querySelectorAll('.board__item');
+    panel = document.querySelector('.panel')
+    resetButtom = document.querySelector('.reset-buttom');
+    onButtonClick;
+
+    constructor(onItemClick, onButtonClick) {
+        this.onButtonClick = onButtonClick;
+        this.resetButtom.addEventListener('click', this.handleResetButtonClick);
+        this.fieldsElements.forEach((field) => {
+            field.addEventListener('click', onItemClick);
+        });
+    };
+
+    handleResetButtonClick = () => {
+        this.resetBoardClasses();
+        this.resetMessage();
+        this.onButtonClick();
+    };
+
+    resetBoardClasses = () => {
+        this.fieldsElements.forEach(field => {
+            field.classList.remove('board__item--filled-X', 'board__item--filled-O');
+        });
+    };
+
+    displayWinMessage = (activePlayer) => {
+        this.panel.innerText = `${activePlayer} won!`;
+    };
+    
+    resetMessage = () => {
+        this.panel.innerText = ``;
+    };
+    
+    displayTieMessage = () => {
+        this.panel.innerText  = 'Tie!';
+    };
 }
 
-const handleResetButtonClick = () => {
-    setDefaults();
-    resetMessage();
-    fieldsElements.forEach(field => {
-        field.classList.remove('board__item--filled-X', 'board__item--filled-O');
-    });
-}
-setDefaults();
-fieldsElements.forEach((field) => {
-    field.addEventListener('click', handleCellClick);
-});
-resetButtom.addEventListener('click', handleResetButtonClick);
-
+const game = new Game();
